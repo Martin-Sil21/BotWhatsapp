@@ -43,7 +43,7 @@ let fechasActualizadas
 
 
 //**FUNCIONES
-    
+
 //Trae la información del excel
 const getRowConsulta = async (nombre) => {
 
@@ -436,7 +436,7 @@ const flowAsesor = addKeyword(['asesor', 'humano', '2'])
                     body: '⬅️ Volver al Inicio'
                 }],
             }, ])
-            return endFlow()
+            // return endFlow()
         })
 
 const flowGracias = addKeyword('finalizado')
@@ -642,7 +642,7 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
 
 
 const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
-    .addAnswer(['Consultando las fechas disponibles....'], null, async (ctx, { 
+    .addAnswer(['Consultando las fechas disponibles....'], null, async (ctx, {
         flowDynamic
     }) => {
 
@@ -668,7 +668,6 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
 
             if (ctx) return flowDynamic([{
                     body: '*1*-' + fechasActualizadas[0],
-                    // buttons: [{body:'*1*'}]
                 },
                 {
                     body: '*2*-' + fechasActualizadas[1]
@@ -689,7 +688,7 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
             ])
 
 
-            
+
 
 
         }
@@ -708,15 +707,15 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
             fallBack
         }) => {
 
-            if (ctx.body == '❌ Cancelar solicitud') {
-                await flowDynamic([{
-                    body: '❌ *Su solicitud de cita ha sido cancelada*  ❌',
-                    buttons: [{
-                        body: '⬅️ Volver al Inicio'
-                    }]
+            // if (ctx.body == '❌ Cancelar solicitud') {
+            //     await flowDynamic([{
+            //         body: '❌ *Su solicitud de cita ha sido cancelada*  ❌',
+            //         buttons: [{
+            //             body: '⬅️ Volver al Inicio'
+            //         }]
 
-                }])
-            }
+            //     }])
+            // }
 
             switch (ctx.body) {
                 case "1":
@@ -736,6 +735,15 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
                     break;
                 case "6":
                     fechaElegida = fechasActualizadas[5]
+                    break;
+                case "❌ Cancelar solicitud":
+                    await flowDynamic([{
+                        body: '❌ *Su solicitud de cita ha sido cancelada*  ❌',
+                        buttons: [{
+                            body: '⬅️ Volver al Inicio'
+                        }]
+
+                    }])
                     break;
                 default:
                     return fallBack(false, 'Recordá responder con 1, 2, 3, 4, 5 o 6 ')
@@ -768,13 +776,15 @@ const flowPrincipal = addKeyword(['alo', 'buen', 'hola', 'ok', 'inicio']).addAns
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal, flowGracias, flowConsulta, flowAsesor])
+    const adapterFlow = createFlow([flowPrincipal, flowGracias  ])
     const adapterProvider = createProvider(BaileysProvider)
 
     createBot({
         flow: adapterFlow,
         provider: adapterProvider,
         database: adapterDB,
+    }, {
+        blackList: []
     })
 
     QRPortalWeb()

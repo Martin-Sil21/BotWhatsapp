@@ -2,10 +2,10 @@
   key: {
     remoteJid: '5491157412668@s.whatsapp.net',
     fromMe: false,
-    id: '3EB067BB0980A2856BD5',
+    id: '3EB0F6ECE969174B130C',
     participant: undefined
   },
-  messageTimestamp: 1676203380,
+  messageTimestamp: 1676585397,
   pushName: 'Martin',
   message: Message {
     conversation: 'ok',
@@ -21,10 +21,10 @@
   key: {
     remoteJid: '5491157412668@s.whatsapp.net',
     fromMe: false,
-    id: '3EB0BFF07C8523F995CA',
+    id: '3EB0F2CEF049EF7057B0',
     participant: undefined
   },
-  messageTimestamp: 1676203382,
+  messageTimestamp: 1676585399,
   pushName: 'Martin',
   message: Message {
     conversation: '1',
@@ -34,5 +34,153 @@
     }
   },
   body: '1',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0E2E7E9F20489F723',
+    participant: undefined
+  },
+  messageTimestamp: 1676585406,
+  pushName: 'Martin',
+  message: Message {
+    conversation: '2',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: '2',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB05A3987D12DAC6A93',
+    participant: undefined
+  },
+  messageTimestamp: 1676585411,
+  pushName: 'Martin',
+  message: Message {
+    conversation: 'cancelar',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: 'cancelar',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0CD9CE18A4B44CFEC',
+    participant: undefined
+  },
+  messageTimestamp: 1676585416,
+  pushName: 'Martin',
+  message: Message {
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    buttonsResponseMessage: ButtonsResponseMessage {
+      selectedButtonId: 'id-btn-2',
+      selectedDisplayText: '❌ Cancelar solicitud',
+      contextInfo: [ContextInfo],
+      type: 1
+    }
+  },
+  body: '❌ Cancelar solicitud',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0428A60E241044783',
+    participant: undefined
+  },
+  messageTimestamp: 1676585431,
+  pushName: 'Martin',
+  message: Message {
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    buttonsResponseMessage: ButtonsResponseMessage {
+      selectedButtonId: 'id-btn-0',
+      selectedDisplayText: '⬅️ Volver al Inicio',
+      contextInfo: [ContextInfo],
+      type: 1
+    }
+  },
+  body: '⬅️ Volver al Inicio',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0F973B871BC35C699',
+    participant: undefined
+  },
+  messageTimestamp: 1676585438,
+  pushName: 'Martin',
+  message: Message {
+    conversation: '2',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: '2',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB035A350B17A6B8874',
+    participant: undefined
+  },
+  messageTimestamp: 1676586051,
+  pushName: 'Martin',
+  message: Message {
+    conversation: 'dd',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: 'dd',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB02341F164959C5AB1',
+    participant: undefined
+  },
+  messageTimestamp: 1676586474,
+  pushName: 'Martin',
+  message: Message {
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    buttonsResponseMessage: ButtonsResponseMessage {
+      selectedButtonId: 'id-btn-0',
+      selectedDisplayText: '⬅️ Volver al Inicio',
+      contextInfo: [ContextInfo],
+      type: 1
+    }
+  },
+  body: '⬅️ Volver al Inicio',
   from: '5491157412668'
 }
