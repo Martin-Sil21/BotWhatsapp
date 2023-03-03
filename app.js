@@ -449,14 +449,14 @@ const flowGracias = addKeyword('finalizado')
     })
 
 const flowCambioDomicilio = addKeyword('Cambiar')
-    .addAnswer('Escriba por favor calle, número y localidad', {
+    .addAnswer('Escriba por favor calle, número y localidad (CABA o CAPITAL si corresponde)', {
         capture: true
     }, async (ctx, {
         flowDynamic
     }) => {
 
 
-        if (ctx.body.toLowerCase().includes('caba')) {
+        if (ctx.body.toLowerCase().includes('caba') || ctx.body.toLowerCase().includes('capital') || ctx.body.toLowerCase().includes('belgrano') || ctx.body.toLowerCase().includes('palermo')) {
 
 
             visita = {
@@ -538,7 +538,7 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
                 await modificaBase(visita)
                 await addRowVisita(visita)
 
-                return flowDynamic('La visita se ha agendado correctamente. Para consultarla en cualquier momento escriba consultar')
+                return flowDynamic('La visita se ha agendado correctamente. Puede consultarla volviendo a iniciar el asistente')
             }
 
             // if (ctx.body == 'Cambiar domicilio') {
@@ -776,7 +776,7 @@ const flowPrincipal = addKeyword(['alo', 'buen', 'hola', 'ok', 'inicio']).addAns
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal, flowGracias  ])
+    const adapterFlow = createFlow([flowPrincipal, flowGracias ])
     const adapterProvider = createProvider(BaileysProvider)
 
     createBot({
