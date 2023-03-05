@@ -28,14 +28,15 @@ const CREDENTIALS = JSON.parse(fs.readFileSync('botsilver-3e4bc3162de9.json'));
 
 
 //**VARIABLES
-let nombre
-let mensaje
-let rango
-let domicilio
-let respuestaConsulta
-let visita
-let fechaElegida
-let fechasActualizadas
+let STATUS = {}
+// let nombre = STATUS[ctx.fro]
+// let mensaje
+// let rango
+// let domicilio
+// let respuestaConsulta
+// let visita
+// let fechaElegida
+// let fechasActualizadas
 //VARIABLES**\\
 
 
@@ -270,6 +271,59 @@ const modificaBase = async (visita) => {
 
 
 };
+const modificaBaseFueraDeZona = async (nombre, resultado, domicilio) => {
+
+    // use service account creds
+    await doc.useServiceAccountAuth({
+        client_email: CREDENTIALS.client_email,
+        private_key: CREDENTIALS.private_key
+    });
+
+    await doc.loadInfo();
+
+    // Index of the sheet
+    let sheet = doc.sheetsByIndex[0];
+
+    let rows = await sheet.getRows();
+
+    for (let index = 0; index < rows.length; index++) {
+        const row = rows[index];
+        if (row.NOMBRE_CLIENTE == nombre) {
+
+            row.RESULTADO = resultado
+            row.DOMICILIO = domicilio
+            await rows[index].save(); // save updates
+        }
+    };
+
+
+};
+const modificaBaseResultado = async (visita, resultado) => {
+
+    // use service account creds
+    await doc.useServiceAccountAuth({
+        client_email: CREDENTIALS.client_email,
+        private_key: CREDENTIALS.private_key
+    });
+
+    await doc.loadInfo();
+
+    // Index of the sheet
+    let sheet = doc.sheetsByIndex[0];
+
+    let rows = await sheet.getRows();
+
+    for (let index = 0; index < rows.length; index++) {
+        const row = rows[index];
+        if (row.NOMBRE_CLIENTE == visita.Nombre) {
+
+            row.RESULTADO = resultado
+            await rows[index].save(); // save updates
+        }
+    };
+
+
+};
 
 //Agrega un registro parcial en la pestaña de visitas pactadas
 const addRowCitaFecha = async (row) => {
@@ -356,15 +410,17 @@ const flowComprobante = addKeyword(['entregue', '5', 'comprobante'])
         flowDynamic
     }) => {
 
-        mensaje = ctx.body
         nombre = await saveClientName(ctx.from);
-
+        
         visita = {
             Nombre: nombre,
             Teléfono: ctx.from,
             Mensaje: 'Comprobante presentado'
         }
         addRowAsesor(visita)
+
+        modificaBaseResultado(visita, 'COMPROBANTE PRESENTADO')
+
         return flowDynamic('Muchas gracias. Quedará asentado.')
     })
 
@@ -372,6 +428,8 @@ const flowConsulta = addKeyword(['consulta', '3'])
     .addAnswer(['Consultando si tiene una cita pactada....'], null, async (ctx, {
         flowDynamic
     }) => {
+
+
         nombre = await saveClientName(ctx.from)
         respuestaConsulta = await getRowConsulta(nombre)
 
@@ -439,14 +497,6 @@ const flowAsesor = addKeyword(['asesor', 'humano', '2'])
             // return endFlow()
         })
 
-const flowGracias = addKeyword('finalizado')
-    .addAnswer([
-        'Genial! Queda agendada la visita. Muchas gracias por su tiempo'
-    ], {
-        buttons: [{
-            body: '⬅️ Volver al Inicio'
-        }]
-    })
 
 const flowCambioDomicilio = addKeyword('Cambiar')
     .addAnswer('Escriba por favor calle, número y localidad (CABA o CAPITAL si corresponde)', {
@@ -459,27 +509,47 @@ const flowCambioDomicilio = addKeyword('Cambiar')
         if (ctx.body.toLowerCase().includes('caba') || ctx.body.toLowerCase().includes('capital') || ctx.body.toLowerCase().includes('belgrano') || ctx.body.toLowerCase().includes('palermo')) {
 
 
-            visita = {
-                Nombre: nombre,
-                Fecha: fechaElegida,
-                RangoHorario: rango,
-                Domicilio: ctx.body
+            STATUS[ctx.from].visita = {
+                Nombre: STATUS[ctx.from].nombre,
+                Fecha: STATUS[ctx.from].fechaElegida,
+                RangoHorario: STATUS[ctx.from].rango,
+                Domicilio: ctx.body,
+                telefono: STATUS[ctx.from].telefono
             }
-            await modificaBase(visita)
 
-            await addRowVisita(visita)
 
-            return flowDynamic('La visita se ha agendado correctamente.')
+
+
+
+            await modificaBase(STATUS[ctx.from].visita)
+            await addRowVisita(STATUS[ctx.from].visita)
+
+            return flowDynamic(`Estupendo *${STATUS[ctx.from].nombre}*! te dejo el resumen de tu formulario
+            \n- Fecha agendada: *${STATUS[ctx.from].fechaElegida}*
+            \n- Rango horario seleccionado: *${STATUS[ctx.from].rango}*
+            \n- Domicilio: *${STATUS[ctx.from].domicilio}*
+            \n\n- Si encuentra algún problema no dude en iniciar nuevamente el asistente*`)
 
         } else {
 
-            visita = {
-                Nombre: nombre,
-                Teléfono: ctx.from,
-                Cita_Obs: `${fechaElegida}  ${rango} ${ctx.body} `
+            STATUS[ctx.from].visita = {
+                Nombre: STATUS[ctx.from].nombre,
+                Fecha: STATUS[ctx.from].fechaElegida,
+                RangoHorario: STATUS[ctx.from].rango,
+                Domicilio: ctx.body,
+                telefono: STATUS[ctx.from].telefono
             }
 
-            await addRowFueraDeZona(visita)
+
+            STATUS[ctx.from].visita = {
+                Nombre: STATUS[ctx.from].nombre,
+                Teléfono: ctx.from,
+                Cita_Obs: `${STATUS[ctx.from].fechaElegida}  ${STATUS[ctx.from].rango} ${ctx.body} `
+            }
+
+
+
+            modificaBaseFueraDeZona(STATUS[ctx.from].nombre, 'FUERA DE ZONA', ctx.body)
             return flowDynamic('Disculpe, al ser fuera de CABA se eleva el caso a mudanzas. Se volverán a comunicar pronto. Muchas gracias')
 
         }
@@ -491,10 +561,20 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
         flowDynamic
     }) => {
 
-        nombre = await saveClientName(ctx.from)
-        domicilio = await getDomicilioByName(nombre)
+        STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                nombre: await saveClientName(ctx.from)
 
-        return flowDynamic(`Por favor confirmá el domicilio ${domicilio} `)
+            },
+
+            STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                domicilio: await getDomicilioByName(STATUS[ctx.from].nombre)
+
+            }
+
+
+        return flowDynamic(`Por favor confirmá el domicilio ${STATUS[ctx.from].domicilio} `)
 
 
     })
@@ -528,17 +608,22 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
             }
             if (ctx.body.includes('correcto')) {
 
-                visita = {
-                    Nombre: nombre,
-                    Fecha: fechaElegida,
-                    RangoHorario: rango,
-                    Domicilio: domicilio
+                STATUS[ctx.from].visita = {
+                    Nombre: STATUS[ctx.from].nombre,
+                    Fecha: STATUS[ctx.from].fechaElegida,
+                    RangoHorario: STATUS[ctx.from].rango,
+                    Domicilio: STATUS[ctx.from].domicilio
                 }
 
-                await modificaBase(visita)
-                await addRowVisita(visita)
+                await modificaBase(STATUS[ctx.from].visita)
+                await addRowVisita(STATUS[ctx.from].visita)
 
-                return flowDynamic('La visita se ha agendado correctamente. Puede consultarla volviendo a iniciar el asistente')
+                return flowDynamic(`Estupendo *${STATUS[ctx.from].nombre}*! te dejo el resumen de tu formulario
+        
+                \n- Fecha agendada: *${STATUS[ctx.from].fechaElegida}*
+                \n- Rango horario seleccionado: *${STATUS[ctx.from].rango}*
+                \n- Domicilio: *${STATUS[ctx.from].domicilio}*
+                \n\n- Si encuentra algún problema no dude en iniciar nuevamente el asistente con la palabra "OK"*`)
             }
 
             // if (ctx.body == 'Cambiar domicilio') {
@@ -593,17 +678,30 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
 
                 switch (ctx.body) {
                     case 'Turno Mañana':
-                        rango = '9 a 13hs'
+                        STATUS[ctx.from] = {
+                            ...STATUS[ctx.from],
+                            rango: '9 a 13hs'
+                        }
                         break;
                     case 'mañana':
-                        rango = '9 a 13hs'
+                        STATUS[ctx.from] = {
+                            ...STATUS[ctx.from],
+                            rango: '9 a 13hs'
+                        }
                         break;
                     case 'Turno Tarde':
-                        rango = '13 a 18hs'
+                        STATUS[ctx.from] = {
+                            ...STATUS[ctx.from],
+                            rango: '13 a 18hs'
+                        }
 
-                        if (fechaElegida.includes('sáb')) {
 
-                            rango = '9 a 13hs'
+                        if (STATUS[ctx.from].fechaElegida.includes('sáb')) {
+                            STATUS[ctx.from] = {
+                                ...STATUS[ctx.from],
+                                rango: '9 a 13hs'
+
+                            }
                             return flowDynamic('Los sábados solo de mañana! si lo desea, puede cancelar la solicitud y seleccionar otro día y horario. De lo contrario, continúe con el siguiente paso')
 
                         } else {
@@ -615,11 +713,17 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
                         break;
 
                     case 'tarde':
-                        rango = '13 a 18hs'
+                        STATUS[ctx.from] = {
+                            ...STATUS[ctx.from],
+                            rango: '13 a 18hs'
+                        }
 
-                        if (fechaElegida.includes('sáb')) {
+                        if (STATUS[ctx.from].fechaElegida.includes('sáb')) {
+                            STATUS[ctx.from] = {
+                                ...STATUS[ctx.from],
+                                rango: '9 a 13hs'
+                            }
 
-                            rango = '9 a 13hs'
                             return flowDynamic('Los sábados solo de mañana! si lo desea, puede cancelar la solicitud y seleccionar otro día y horario. De lo contrario, continúe con el siguiente paso')
 
                         } else {
@@ -646,11 +750,25 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
         flowDynamic
     }) => {
 
-        nombre = await saveClientName(ctx.from)
-        domicilio = await getDomicilioByName(nombre)
-        fechasActualizadas = await saveFechasExcel()
+        STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                nombre: await saveClientName(ctx.from)
 
-        if (nombre == 'Teléfono no existe en Base de datos') {
+            },
+
+            STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                domicilio: await getDomicilioByName(STATUS[ctx.from].nombre)
+
+            },
+
+            STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                fechasActualizadas: await saveFechasExcel()
+            }
+
+
+        if (STATUS[ctx.from].nombre == 'Teléfono no existe en Base de datos') {
 
             flowDynamic([{
                 body: 'Su teléfono no se encuentra en nuestra base de datos. Por favor seleccionar la opción de *asesor humano* o comuníquese del teléfono que recibió nuestros mensajes. Muchas gracias y disculpe por las molestias.',
@@ -667,22 +785,22 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
 
 
             if (ctx) return flowDynamic([{
-                    body: '*1*-' + fechasActualizadas[0],
+                    body: '*1*-' + STATUS[ctx.from].fechasActualizadas[0],
                 },
                 {
-                    body: '*2*-' + fechasActualizadas[1]
+                    body: '*2*-' + STATUS[ctx.from].fechasActualizadas[1]
                 },
                 {
-                    body: '*3*-' + fechasActualizadas[2]
+                    body: '*3*-' + STATUS[ctx.from].fechasActualizadas[2]
                 },
                 {
-                    body: '*4*-' + fechasActualizadas[3]
+                    body: '*4*-' + STATUS[ctx.from].fechasActualizadas[3]
                 },
                 {
-                    body: '*5*-' + fechasActualizadas[4]
+                    body: '*5*-' + STATUS[ctx.from].fechasActualizadas[4]
                 },
                 {
-                    body: '*6*-' + fechasActualizadas[5]
+                    body: '*6*-' + STATUS[ctx.from].fechasActualizadas[5]
                 }
 
             ])
@@ -698,7 +816,7 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
         ], {
             capture: true,
             buttons: [{
-                body: '❌ Cancelar solicitud'
+                body: '❌ Cancelar solicitud ❌'
             }]
         },
         async (ctx, {
@@ -707,36 +825,45 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
             fallBack
         }) => {
 
-            // if (ctx.body == '❌ Cancelar solicitud') {
-            //     await flowDynamic([{
-            //         body: '❌ *Su solicitud de cita ha sido cancelada*  ❌',
-            //         buttons: [{
-            //             body: '⬅️ Volver al Inicio'
-            //         }]
-
-            //     }])
-            // }
-
             switch (ctx.body) {
                 case "1":
-                    fechaElegida = fechasActualizadas[0]
+
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[0]
+                    }
                     break;
                 case "2":
-                    fechaElegida = fechasActualizadas[1]
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[1]
+                    }
                     break;
                 case "3":
-                    fechaElegida = fechasActualizadas[2]
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[2]
+                    }
                     break;
                 case "4":
-                    fechaElegida = fechasActualizadas[3]
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[3]
+                    }
                     break;
                 case "5":
-                    fechaElegida = fechasActualizadas[4]
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[4]
+                    }
                     break;
                 case "6":
-                    fechaElegida = fechasActualizadas[5]
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[5]
+                    }
                     break;
-                case "❌ Cancelar solicitud":
+                case "❌ Cancelar solicitud ❌":
                     await flowDynamic([{
                         body: '❌ *Su solicitud de cita ha sido cancelada*  ❌',
                         buttons: [{
@@ -776,7 +903,7 @@ const flowPrincipal = addKeyword(['alo', 'buen', 'hola', 'ok', 'inicio']).addAns
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal, flowGracias ])
+    const adapterFlow = createFlow([flowPrincipal])
     const adapterProvider = createProvider(BaileysProvider)
 
     createBot({
