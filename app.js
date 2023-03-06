@@ -5,6 +5,17 @@ const {
     addKeyword,
 } = require('@bot-whatsapp/bot')
 
+require('dotenv').config()
+const ChatGPTClass = require('./chatgpt.class')
+const CHATGPT = require('./chatgpt')
+
+
+const createBotGPT = async ({
+    provider,
+    database
+}) => {
+    return new ChatGPTClass(database, provider);
+};
 const QRPortalWeb = require('@bot-whatsapp/portal')
 const BaileysProvider = require('@bot-whatsapp/provider/baileys')
 const MockAdapter = require('@bot-whatsapp/database/mock')
@@ -81,60 +92,6 @@ const getRowConsulta = async (nombre) => {
     return 'NO HAY NADA'
 };
 
-//Agrega la celda del rango horario en el excel
-const addCellRangoHorario = async (nombre, rango) => {
-
-    // use service account creds
-    await doc.useServiceAccountAuth({
-        client_email: CREDENTIALS.client_email,
-        private_key: CREDENTIALS.private_key
-    });
-
-    // load the documents info
-    await doc.loadInfo();
-
-    // Index of the sheet
-    let sheet4 = doc.sheetsByIndex[4];
-
-    // Get all the rows
-    let rows = await sheet4.getRows();
-
-    for (let index = 0; index < rows.length; index++) {
-        const row = rows[index];
-        if (row.Nombre == nombre) {
-            row.RangoHorario = rango
-            await rows[index].save(); // save updates
-        }
-    };
-};
-
-//Agrega la celda del domicilio en el excel
-const addCellDomicilio = async (nombre, texto) => {
-
-    // use service account creds
-    await doc.useServiceAccountAuth({
-        client_email: CREDENTIALS.client_email,
-        private_key: CREDENTIALS.private_key
-    });
-
-    // load the documents info
-    await doc.loadInfo();
-
-    // Index of the sheet
-    let sheet4 = doc.sheetsByIndex[4];
-
-    // Get all the rows
-    let rows = await sheet4.getRows();
-
-    for (let index = 0; index < rows.length; index++) {
-        const row = rows[index];
-        if (row.Nombre == nombre) {
-            row.Domicilio = texto
-            await rows[index].save(); // save updates
-        }
-    };
-};
-
 //Busca con el número de teléfono el nombre del cliente en la base
 const saveClientName = async (número) => {
 
@@ -203,25 +160,6 @@ const addRowAsesor = async (row) => {
 
 };
 
-//Agrega un registro en la pestaña de Fuera de Zona
-const addRowFueraDeZona = async (row) => {
-
-    // use service account creds
-    await doc.useServiceAccountAuth({
-        client_email: CREDENTIALS.client_email,
-        private_key: CREDENTIALS.private_key
-    });
-
-    await doc.loadInfo();
-
-
-    // Index of the sheet
-    let sheet5 = doc.sheetsByIndex[5];
-
-    await sheet5.addRow(row);
-
-};
-
 //Agrega un registro en la Pestaña de Visitas concretadas
 const addRowVisita = async (row) => {
 
@@ -271,6 +209,7 @@ const modificaBase = async (visita) => {
 
 
 };
+
 const modificaBaseFueraDeZona = async (nombre, resultado, domicilio) => {
 
     // use service account creds
@@ -298,6 +237,7 @@ const modificaBaseFueraDeZona = async (nombre, resultado, domicilio) => {
 
 
 };
+
 const modificaBaseResultado = async (visita, resultado) => {
 
     // use service account creds
@@ -323,54 +263,6 @@ const modificaBaseResultado = async (visita, resultado) => {
     };
 
 
-};
-
-//Agrega un registro parcial en la pestaña de visitas pactadas
-const addRowCitaFecha = async (row) => {
-
-    // use service account creds
-    await doc.useServiceAccountAuth({
-        client_email: CREDENTIALS.client_email,
-        private_key: CREDENTIALS.private_key
-    });
-
-    await doc.loadInfo();
-
-    // Index of the sheet
-    let sheet4 = doc.sheetsByIndex[4];
-
-    await sheet4.addRow(row);
-
-};
-
-//Elimina Fila
-const deleteRow = async (columna, valor) => {
-
-    // use service account creds
-    await doc.useServiceAccountAuth({
-        client_email: CREDENTIALS.client_email,
-        private_key: CREDENTIALS.private_key
-    });
-
-    await doc.loadInfo();
-
-    // Index of the sheet
-    let sheet4 = doc.sheetsByIndex[4];
-
-    let rows = await sheet4.getRows();
-
-    for (let index = 0; index < rows.length; index++) {
-
-        const row = rows[index];
-
-        if (row[columna] === valor) {
-
-            await rows[index].delete();
-            // await rows[index].save();
-            break;
-        }
-
-    };
 };
 
 //Busca el domicilio con el nombre
@@ -401,7 +293,7 @@ const getDomicilioByName = async (nombre) => {
 };
 //FUNCIONES**\\
 
-//**FLOWS
+//**FLOWS\\
 
 const flowComprobante = addKeyword(['entregue', '5', 'comprobante'])
     .addAnswer(['Perfecto! Por favor faciliteme una foto clara del comprobante y escriba Enviado.'], {
@@ -411,7 +303,7 @@ const flowComprobante = addKeyword(['entregue', '5', 'comprobante'])
     }) => {
 
         nombre = await saveClientName(ctx.from);
-        
+
         visita = {
             Nombre: nombre,
             Teléfono: ctx.from,
@@ -664,6 +556,24 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
             fallBack
         }) => {
 
+            // STATUS[ctx.from] = {
+            //         ...STATUS[ctx.from],
+            //         nombre: await saveClientName(ctx.from)
+
+            //     },
+
+            //     STATUS[ctx.from] = {
+            //         ...STATUS[ctx.from],
+            //         domicilio: await getDomicilioByName(STATUS[ctx.from].nombre)
+
+            //     },
+
+            //     STATUS[ctx.from] = {
+            //         ...STATUS[ctx.from],
+            //         fechasActualizadas: await saveFechasExcel()
+            //     }
+
+
             if (ctx.body == '❌ Cancelar solicitud') {
                 await flowDynamic([{
                     body: '❌ *Su solicitud de cita ha sido cancelada*  ❌',
@@ -695,7 +605,7 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
                             rango: '13 a 18hs'
                         }
 
-
+                        console.log(STATUS[ctx.from])
                         if (STATUS[ctx.from].fechaElegida.includes('sáb')) {
                             STATUS[ctx.from] = {
                                 ...STATUS[ctx.from],
@@ -718,23 +628,9 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
                             rango: '13 a 18hs'
                         }
 
-                        if (STATUS[ctx.from].fechaElegida.includes('sáb')) {
-                            STATUS[ctx.from] = {
-                                ...STATUS[ctx.from],
-                                rango: '9 a 13hs'
-                            }
-
-                            return flowDynamic('Los sábados solo de mañana! si lo desea, puede cancelar la solicitud y seleccionar otro día y horario. De lo contrario, continúe con el siguiente paso')
-
-                        } else {
-
-
-                            return flowDynamic('Perfecto!')
-
-                        }
-                        default:
-                            return fallBack(false, 'selecciona una de las opciones')
-                            break;
+                    default:
+                        return fallBack(false, 'selecciona una de las opciones')
+                        break;
                 }
 
 
@@ -747,7 +643,8 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
 
 const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
     .addAnswer(['Consultando las fechas disponibles....'], null, async (ctx, {
-        flowDynamic
+        flowDynamic,
+        provider
     }) => {
 
         STATUS[ctx.from] = {
@@ -767,6 +664,7 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
                 fechasActualizadas: await saveFechasExcel()
             }
 
+       
 
         if (STATUS[ctx.from].nombre == 'Teléfono no existe en Base de datos') {
 
@@ -783,37 +681,58 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
 
         } else {
 
+            const id = ctx.key.remoteJid
 
-            if (ctx) return flowDynamic([{
-                    body: '*1*-' + STATUS[ctx.from].fechasActualizadas[0],
+            const sections = [{
+                    title: "FECHAS",
+                    rows: [{
+                            title: '1' ,
+                            rowId: "option1",
+                            description:STATUS[ctx.from].fechasActualizadas[0]
+                        },
+                        {
+                            title: '2' ,
+                            rowId: "option2",
+                            description:STATUS[ctx.from].fechasActualizadas[1]
+                        },
+                        {
+                            title: '3' ,
+                            rowId: "option3",
+                            description:STATUS[ctx.from].fechasActualizadas[2]
+                        },
+                        {
+                            title: '4' ,
+                            rowId: "option4",
+                            description:STATUS[ctx.from].fechasActualizadas[3]
+                        },
+                        {
+                            title: '5' ,
+                            rowId: "option5",
+                            description:STATUS[ctx.from].fechasActualizadas[4]
+                        },
+                        {
+                            title: '6' ,
+                            rowId: "option6",
+                            description:STATUS[ctx.from].fechasActualizadas[5]
+                        },
+
+                    ]
                 },
-                {
-                    body: '*2*-' + STATUS[ctx.from].fechasActualizadas[1]
-                },
-                {
-                    body: '*3*-' + STATUS[ctx.from].fechasActualizadas[2]
-                },
-                {
-                    body: '*4*-' + STATUS[ctx.from].fechasActualizadas[3]
-                },
-                {
-                    body: '*5*-' + STATUS[ctx.from].fechasActualizadas[4]
-                },
-                {
-                    body: '*6*-' + STATUS[ctx.from].fechasActualizadas[5]
-                }
 
-            ])
+            ]
 
-
-
-
-
+            const listMessage = {
+                text: "Listado de fechas disponibles",
+                buttonText: "Seleccione una fecha *AQUÍ*",
+                sections
+            }
+            const abc = await provider.getInstance()
+            await abc.sendMessage(id, listMessage)
+            return
         }
-    })
-    .addAnswer([
-            'Estas son las opciones que tengo para ofrecerte. Recordá responder con *1*, *2*, *3*, *4*, *5* o *6*'
-        ], {
+
+    }, [])
+    .addAnswer(['*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*'], {
             capture: true,
             buttons: [{
                 body: '❌ Cancelar solicitud ❌'
@@ -822,42 +741,44 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
         async (ctx, {
             flowDynamic,
             endFlow,
-            fallBack
+            fallBack,
+            provider
         }) => {
 
+           console.log(ctx.body)
             switch (ctx.body) {
-                case "1":
+                case 'option1':
 
                     STATUS[ctx.from] = {
                         ...STATUS[ctx.from],
                         fechaElegida: STATUS[ctx.from].fechasActualizadas[0]
                     }
                     break;
-                case "2":
+                case 'option2':
                     STATUS[ctx.from] = {
                         ...STATUS[ctx.from],
                         fechaElegida: STATUS[ctx.from].fechasActualizadas[1]
                     }
                     break;
-                case "3":
+                case 'option3':
                     STATUS[ctx.from] = {
                         ...STATUS[ctx.from],
                         fechaElegida: STATUS[ctx.from].fechasActualizadas[2]
                     }
                     break;
-                case "4":
+                case 'option4':
                     STATUS[ctx.from] = {
                         ...STATUS[ctx.from],
                         fechaElegida: STATUS[ctx.from].fechasActualizadas[3]
                     }
                     break;
-                case "5":
+                case 'option5':
                     STATUS[ctx.from] = {
                         ...STATUS[ctx.from],
                         fechaElegida: STATUS[ctx.from].fechasActualizadas[4]
                     }
                     break;
-                case "6":
+                case 'option6':
                     STATUS[ctx.from] = {
                         ...STATUS[ctx.from],
                         fechaElegida: STATUS[ctx.from].fechasActualizadas[5]
@@ -873,37 +794,85 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
                     }])
                     break;
                 default:
-                    return fallBack(false, 'Recordá responder con 1, 2, 3, 4, 5 o 6 ')
+                    return flowDynamic('Ok,')
                     break;
             }
+
+            
+
 
         }, [flowHorario])
 
 
 
 const flowPrincipal = addKeyword(['alo', 'buen', 'hola', 'ok', 'inicio']).addAnswer(['Hola!'])
-    .addAnswer([
-        'Por favor elegir una de las siguientes opciones con *1*, *2*, *3*, *4* o *5*'
-    ])
-    .addAnswer([
-            '*1*-Elegir *fecha* y hora de visita',
-            '*2*-Hablar con un *asesor humano*',
-            '*3*-*Consultar* visita previamente programada',
-            '*4*-Tengo una visita pactada y necesito *reprogramarla*',
-            '*5*-Quiero presentar mi comprobante para que quede asentado'
+    .addAnswer(['Por favor elegir una de las siguientes opciones de la lista'], null, async (ctx, {
+        provider
+    }) => {
+        const id = ctx.key.remoteJid
+
+        const sections = [{
+                title: "COMPRAS",
+                rows: [{
+                        title: '*1*-Elegir *fecha* y hora de visita',
+                        rowId: "option1",
+                        description: "Elija esta opcion para reservar fecha y hora de visita"
+                    },
+                    {
+                        title: '*2*-Hablar con un *asesor humano*',
+                        rowId: "option2",
+                        description: "Elija esta opcion para que se contacte con usted un asesor"
+                    },
+                    {
+                        title: '*3*-*Consultar* visita previamente programada',
+                        rowId: "option3",
+                        description: "Elija esta opcion para consultar si tiene una visita programada con nosotros "
+                    },
+                    {
+                        title: '*4*-Tengo una visita pactada y necesito *reprogramarla*',
+                        rowId: "option4",
+                        description: "Elija esta opcción para reprogramar una visita"
+                    },
+                    {
+                        title: '*5*-Quiero presentar mi comprobante para que quede asentado',
+                        rowId: "option5",
+                        description: "Elija esta opccion para dejar asentado un comprobante de entrega"
+                    },
+
+                ]
+            },
 
 
-        ],
-        null,
-        null,
-        [flowFecha, flowAsesor, flowConsulta, flowComprobante])
+        ]
+
+        const listMessage = {
+            text: "Seleccione una opción",
+            buttonText: "Abrir listado *AQUÍ*",
+            sections
+        }
+        const abc = await provider.getInstance()
+
+        await abc.sendMessage(id, listMessage)
+        return
+    }, [flowFecha, flowAsesor, flowConsulta, flowComprobante])
+
+
 
 
 //FLOWS**\\
 
+
+const flowChatGPT = addKeyword('hey silver')
+    .addAnswer('Preguntale algo a la IA',{capture:true}, async (ctx, {flowDynamic}) => {
+        var message = ctx.body;
+      await CHATGPT.runCompletion(message).then(result => {
+        return flowDynamic(result)
+      });       
+    })
+
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal])
+    const adapterFlow = createFlow([flowPrincipal,flowChatGPT])
     const adapterProvider = createProvider(BaileysProvider)
 
     createBot({
