@@ -11,7 +11,7 @@ async function runCompletion (message) {
     const completion = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: message,
-        max_tokens: 200,
+        max_tokens: 1000,
     });
     return completion.data.choices[0].text;
 }

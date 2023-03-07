@@ -202,7 +202,7 @@ const modificaBase = async (visita) => {
             row.FECHA_VISITA_LLAMADO = visita.Fecha
             row.TURNO = visita.RangoHorario
             row.DOMICILIO = visita.Domicilio
-            row.RESULTADO = 'CONCRETADO'
+            row.RESULTADO = 'CONCRETADO POR BOT'
             await rows[index].save(); // save updates
         }
     };
@@ -391,7 +391,7 @@ const flowAsesor = addKeyword(['asesor', 'humano', '2'])
 
 
 const flowCambioDomicilio = addKeyword('Cambiar')
-    .addAnswer('Escriba por favor calle, número y localidad (CABA o CAPITAL si corresponde)', {
+    .addAnswer('Escriba por favor calle, número y localidad *EN UN SOLO RENGLÓN* (CABA o CAPITAL si corresponde)', {
         capture: true
     }, async (ctx, {
         flowDynamic
@@ -401,13 +401,22 @@ const flowCambioDomicilio = addKeyword('Cambiar')
         if (ctx.body.toLowerCase().includes('caba') || ctx.body.toLowerCase().includes('capital') || ctx.body.toLowerCase().includes('belgrano') || ctx.body.toLowerCase().includes('palermo')) {
 
 
-            STATUS[ctx.from].visita = {
-                Nombre: STATUS[ctx.from].nombre,
-                Fecha: STATUS[ctx.from].fechaElegida,
-                RangoHorario: STATUS[ctx.from].rango,
-                Domicilio: ctx.body,
-                telefono: STATUS[ctx.from].telefono
-            }
+
+            STATUS[ctx.from] = {
+                    ...STATUS[ctx.from],
+                    domicilio: ctx.body
+
+                },
+
+
+
+                STATUS[ctx.from].visita = {
+                    Nombre: STATUS[ctx.from].nombre,
+                    Fecha: STATUS[ctx.from].fechaElegida,
+                    RangoHorario: STATUS[ctx.from].rango,
+                    Domicilio: STATUS[ctx.from].domicilio,
+                    telefono: STATUS[ctx.from].telefono
+                }
 
 
 
@@ -507,6 +516,9 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
                     Domicilio: STATUS[ctx.from].domicilio
                 }
 
+
+
+
                 await modificaBase(STATUS[ctx.from].visita)
                 await addRowVisita(STATUS[ctx.from].visita)
 
@@ -605,7 +617,7 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
                             rango: '13 a 18hs'
                         }
 
-                        console.log(STATUS[ctx.from])
+
                         if (STATUS[ctx.from].fechaElegida.includes('sáb')) {
                             STATUS[ctx.from] = {
                                 ...STATUS[ctx.from],
@@ -664,7 +676,7 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
                 fechasActualizadas: await saveFechasExcel()
             }
 
-       
+
 
         if (STATUS[ctx.from].nombre == 'Teléfono no existe en Base de datos') {
 
@@ -686,34 +698,34 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
             const sections = [{
                     title: "FECHAS",
                     rows: [{
-                            title: '1' ,
+                            title: '1',
                             rowId: "option1",
-                            description:STATUS[ctx.from].fechasActualizadas[0]
+                            description: STATUS[ctx.from].fechasActualizadas[0]
                         },
                         {
-                            title: '2' ,
+                            title: '2',
                             rowId: "option2",
-                            description:STATUS[ctx.from].fechasActualizadas[1]
+                            description: STATUS[ctx.from].fechasActualizadas[1]
                         },
                         {
-                            title: '3' ,
+                            title: '3',
                             rowId: "option3",
-                            description:STATUS[ctx.from].fechasActualizadas[2]
+                            description: STATUS[ctx.from].fechasActualizadas[2]
                         },
                         {
-                            title: '4' ,
+                            title: '4',
                             rowId: "option4",
-                            description:STATUS[ctx.from].fechasActualizadas[3]
+                            description: STATUS[ctx.from].fechasActualizadas[3]
                         },
                         {
-                            title: '5' ,
+                            title: '5',
                             rowId: "option5",
-                            description:STATUS[ctx.from].fechasActualizadas[4]
+                            description: STATUS[ctx.from].fechasActualizadas[4]
                         },
                         {
-                            title: '6' ,
+                            title: '6',
                             rowId: "option6",
-                            description:STATUS[ctx.from].fechasActualizadas[5]
+                            description: STATUS[ctx.from].fechasActualizadas[5]
                         },
 
                     ]
@@ -745,7 +757,7 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
             provider
         }) => {
 
-           console.log(ctx.body)
+
             switch (ctx.body) {
                 case 'option1':
 
@@ -798,16 +810,16 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
                     break;
             }
 
-            
+
 
 
         }, [flowHorario])
 
 
 
-const flowPrincipal = addKeyword(['alo', 'buen', 'hola', 'ok', 'inicio']).addAnswer(['Hola!'])
+const flowPrincipal = addKeyword(['ok', 'inicio']).addAnswer(['Hola!'])
     .addAnswer(['Por favor elegir una de las siguientes opciones de la lista'], null, async (ctx, {
-        provider
+        provider,
     }) => {
         const id = ctx.key.remoteJid
 
@@ -859,20 +871,39 @@ const flowPrincipal = addKeyword(['alo', 'buen', 'hola', 'ok', 'inicio']).addAns
 
 
 
+const flowConfirmación = addKeyword(['equipos retirados','equipo retirado']).addAnswer('Gracias por su tiempo!',null, async (ctx) => {
+    STATUS[ctx.from] = {
+        ...STATUS[ctx.from],
+        nombre: await saveClientName(ctx.from)
+    }
+
+    visita = {
+        Nombre: STATUS[ctx.from].nombre,        
+    }
+
+    modificaBaseResultado(visita, 'CONFIRMADO')
+
+})
+
+
 //FLOWS**\\
 
 
 const flowChatGPT = addKeyword('hey silver')
-    .addAnswer('Preguntale algo a la IA',{capture:true}, async (ctx, {flowDynamic}) => {
+    .addAnswer('Dígame', {
+        capture: true
+    }, async (ctx, {
+        flowDynamic
+    }) => {
         var message = ctx.body;
-      await CHATGPT.runCompletion(message).then(result => {
-        return flowDynamic(result)
-      });       
+        await CHATGPT.runCompletion(message).then(result => {
+            return flowDynamic(result)
+        });
     })
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal,flowChatGPT])
+    const adapterFlow = createFlow([flowPrincipal, flowChatGPT,flowConfirmación])
     const adapterProvider = createProvider(BaileysProvider)
 
     createBot({

@@ -2,94 +2,159 @@
   key: {
     remoteJid: '5491157412668@s.whatsapp.net',
     fromMe: false,
-    id: '3EB0BA42FD3C40D8D989',
+    id: '3EB0CF08283993EC66BA',
     participant: undefined
   },
-  messageTimestamp: 1678073680,
+  messageTimestamp: 1678215209,
   pushName: 'Martin',
   message: Message {
-    conversation: 'hey silver',
+    conversation: 'ok',
     messageContextInfo: MessageContextInfo {
       deviceListMetadata: [DeviceListMetadata],
       deviceListMetadataVersion: 2
     }
   },
-  body: 'hey silver',
+  body: 'ok',
   from: '5491157412668'
 }
 [handleMsg]:  {
   key: {
     remoteJid: '5491157412668@s.whatsapp.net',
     fromMe: false,
-    id: '3EB0E4FD2D3610DC3C23',
+    id: '3EB0675FC51CD4C55703',
     participant: undefined
   },
-  messageTimestamp: 1678073685,
+  messageTimestamp: 1678215213,
   pushName: 'Martin',
   message: Message {
-    conversation: '2 mas 2',
     messageContextInfo: MessageContextInfo {
       deviceListMetadata: [DeviceListMetadata],
       deviceListMetadataVersion: 2
+    },
+    listResponseMessage: ListResponseMessage {
+      title: '*1*-Elegir *fecha* y hora de visita',
+      listType: 1,
+      singleSelectReply: [SingleSelectReply],
+      contextInfo: [ContextInfo],
+      description: 'Elija esta opcion para reservar fecha y hora de visita'
     }
   },
-  body: '2 mas 2',
+  body: 'option1',
   from: '5491157412668'
 }
 [handleMsg]:  {
   key: {
     remoteJid: '5491157412668@s.whatsapp.net',
     fromMe: false,
-    id: '3EB0D8D94B681CDC3403',
+    id: '3EB02D270E3DD7066D18',
     participant: undefined
   },
-  messageTimestamp: 1678073703,
+  messageTimestamp: 1678215223,
   pushName: 'Martin',
   message: Message {
-    conversation: 'y mas 2?',
     messageContextInfo: MessageContextInfo {
       deviceListMetadata: [DeviceListMetadata],
       deviceListMetadataVersion: 2
+    },
+    listResponseMessage: ListResponseMessage {
+      title: '1',
+      listType: 1,
+      singleSelectReply: [SingleSelectReply],
+      contextInfo: [ContextInfo],
+      description: 'miércoles, 8 de marzo de 2023'
     }
   },
-  body: 'y mas 2?',
+  body: 'option1',
   from: '5491157412668'
 }
 [handleMsg]:  {
   key: {
     remoteJid: '5491157412668@s.whatsapp.net',
     fromMe: false,
-    id: '3EB0D84C834E9250C562',
+    id: '3EB0BADAA3B9728A87FE',
     participant: undefined
   },
-  messageTimestamp: 1678073708,
+  messageTimestamp: 1678215227,
   pushName: 'Martin',
   message: Message {
-    conversation: 'hey silver',
     messageContextInfo: MessageContextInfo {
       deviceListMetadata: [DeviceListMetadata],
       deviceListMetadataVersion: 2
+    },
+    buttonsResponseMessage: ButtonsResponseMessage {
+      selectedButtonId: 'id-btn-1',
+      selectedDisplayText: 'Turno Tarde',
+      contextInfo: [ContextInfo],
+      type: 1
     }
   },
-  body: 'hey silver',
+  body: 'Turno Tarde',
   from: '5491157412668'
 }
 [handleMsg]:  {
   key: {
     remoteJid: '5491157412668@s.whatsapp.net',
     fromMe: false,
-    id: '3EB0AFC73CA183DFAB2E',
+    id: '3EB0B2F0202601555A57',
     participant: undefined
   },
-  messageTimestamp: 1678073738,
+  messageTimestamp: 1678215234,
   pushName: 'Martin',
   message: Message {
-    conversation: 'quisiera saber como prepararse legalmente para un juicio familiar',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    buttonsResponseMessage: ButtonsResponseMessage {
+      selectedButtonId: 'id-btn-1',
+      selectedDisplayText: 'Cambiar domicilio',
+      contextInfo: [ContextInfo],
+      type: 1
+    }
+  },
+  body: 'Cambiar domicilio',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0CDDB4C8743FBBEC2',
+    participant: undefined
+  },
+  messageTimestamp: 1678215238,
+  pushName: 'Martin',
+  message: Message {
+    conversation: 'ffssf',
     messageContextInfo: MessageContextInfo {
       deviceListMetadata: [DeviceListMetadata],
       deviceListMetadataVersion: 2
     }
   },
-  body: 'quisiera saber como prepararse legalmente para un juicio familiar',
+  body: 'ffssf',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0BA726019539065BD',
+    participant: undefined
+  },
+  messageTimestamp: 1678215255,
+  pushName: 'Martin',
+  message: Message {
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    buttonsResponseMessage: ButtonsResponseMessage {
+      selectedButtonId: 'id-btn-0',
+      selectedDisplayText: 'SI, es dentro de CABA',
+      contextInfo: [ContextInfo],
+      type: 1
+    }
+  },
+  body: 'SI, es dentro de CABA',
   from: '5491157412668'
 }
