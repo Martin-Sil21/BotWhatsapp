@@ -199,10 +199,12 @@ const modificaBase = async (visita) => {
         const row = rows[index];
         if (row.NOMBRE_CLIENTE == visita.Nombre) {
 
+
             row.FECHA_VISITA_LLAMADO = visita.Fecha
             row.TURNO = visita.RangoHorario
             row.DOMICILIO = visita.Domicilio
-            row.RESULTADO = 'CONCRETADO POR BOT'
+            row.RESULTADO = 'CONCRETADO'
+            row.CitaObservación = 'CONCRETADO POR BOT ' + visita.Teléfono
             await rows[index].save(); // save updates
         }
     };
@@ -408,6 +410,13 @@ const flowCambioDomicilio = addKeyword('Cambiar')
 
                 },
 
+                STATUS[ctx.from] = {
+                    ...STATUS[ctx.from],
+                    Teléfono: ctx.from
+
+                },
+
+
 
 
                 STATUS[ctx.from].visita = {
@@ -415,11 +424,12 @@ const flowCambioDomicilio = addKeyword('Cambiar')
                     Fecha: STATUS[ctx.from].fechaElegida,
                     RangoHorario: STATUS[ctx.from].rango,
                     Domicilio: STATUS[ctx.from].domicilio,
-                    telefono: STATUS[ctx.from].telefono
+                    Teléfono: STATUS[ctx.from].Teléfono
                 }
 
 
 
+            console.log(STATUS[ctx.from], 'CAMBIO')
 
 
             await modificaBase(STATUS[ctx.from].visita)
@@ -513,11 +523,12 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
                     Nombre: STATUS[ctx.from].nombre,
                     Fecha: STATUS[ctx.from].fechaElegida,
                     RangoHorario: STATUS[ctx.from].rango,
-                    Domicilio: STATUS[ctx.from].domicilio
+                    Domicilio: STATUS[ctx.from].domicilio,
+                    Teléfono: STATUS[ctx.from].Teléfono
                 }
 
 
-
+                console.log(STATUS[ctx.from],'CORRECTO')
 
                 await modificaBase(STATUS[ctx.from].visita)
                 await addRowVisita(STATUS[ctx.from].visita)
@@ -817,11 +828,18 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
 
 
 
-const flowPrincipal = addKeyword(['ok', 'inicio']).addAnswer(['Hola!'])
+const flowPrincipal = addKeyword(['ok', 'inicio', 'hola']).addAnswer(['Hola!'])
     .addAnswer(['Por favor elegir una de las siguientes opciones de la lista'], null, async (ctx, {
         provider,
     }) => {
         const id = ctx.key.remoteJid
+
+
+        STATUS[ctx.from] = {
+            ...STATUS[ctx.from],
+            Teléfono: ctx.from
+        }
+
 
         const sections = [{
                 title: "COMPRAS",
@@ -871,14 +889,14 @@ const flowPrincipal = addKeyword(['ok', 'inicio']).addAnswer(['Hola!'])
 
 
 
-const flowConfirmación = addKeyword(['equipos retirados','equipo retirado']).addAnswer('Gracias por su tiempo!',null, async (ctx) => {
+const flowConfirmación = addKeyword(['equipos retirados', 'equipo retirado', 'quipo reti']).addAnswer('Gracias por su tiempo!', null, async (ctx) => {
     STATUS[ctx.from] = {
         ...STATUS[ctx.from],
         nombre: await saveClientName(ctx.from)
     }
 
     visita = {
-        Nombre: STATUS[ctx.from].nombre,        
+        Nombre: STATUS[ctx.from].nombre,
     }
 
     modificaBaseResultado(visita, 'CONFIRMADO')
@@ -903,7 +921,7 @@ const flowChatGPT = addKeyword('hey silver')
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal, flowChatGPT,flowConfirmación])
+    const adapterFlow = createFlow([flowPrincipal, flowChatGPT, flowConfirmación])
     const adapterProvider = createProvider(BaileysProvider)
 
     createBot({
