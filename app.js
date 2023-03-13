@@ -9,16 +9,17 @@ require('dotenv').config()
 const ChatGPTClass = require('./chatgpt.class')
 const CHATGPT = require('./chatgpt')
 
-
 const createBotGPT = async ({
     provider,
     database
 }) => {
     return new ChatGPTClass(database, provider);
 };
+
 const QRPortalWeb = require('@bot-whatsapp/portal')
 const BaileysProvider = require('@bot-whatsapp/provider/baileys')
 const MockAdapter = require('@bot-whatsapp/database/mock')
+const adapterProvider = createProvider(BaileysProvider)
 
 // Google sheet npm package
 const {
@@ -212,6 +213,33 @@ const modificaBase = async (visita) => {
 
 };
 
+const modificaBaseCancelación = async (nombre) => {
+
+    // use service account creds
+    await doc.useServiceAccountAuth({
+        client_email: CREDENTIALS.client_email,
+        private_key: CREDENTIALS.private_key
+    });
+
+    await doc.loadInfo();
+
+    // Index of the sheet
+    let sheet = doc.sheetsByIndex[0];
+
+    let rows = await sheet.getRows();
+
+    for (let index = 0; index < rows.length; index++) {
+        const row = rows[index];
+        if (row.NOMBRE_CLIENTE == nombre) {
+
+            row.RESULTADO = 'CANCELADO'
+
+            await rows[index].save(); // save updates
+        }
+    };
+
+
+};
 const modificaBaseFueraDeZona = async (nombre, resultado, domicilio) => {
 
     // use service account creds
@@ -429,8 +457,6 @@ const flowCambioDomicilio = addKeyword('Cambiar')
 
 
 
-            console.log(STATUS[ctx.from], 'CAMBIO')
-
 
             await modificaBase(STATUS[ctx.from].visita)
             await addRowVisita(STATUS[ctx.from].visita)
@@ -528,8 +554,6 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
                 }
 
 
-                console.log(STATUS[ctx.from],'CORRECTO')
-
                 await modificaBase(STATUS[ctx.from].visita)
                 await addRowVisita(STATUS[ctx.from].visita)
 
@@ -538,7 +562,9 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
                 \n- Fecha agendada: *${STATUS[ctx.from].fechaElegida}*
                 \n- Rango horario seleccionado: *${STATUS[ctx.from].rango}*
                 \n- Domicilio: *${STATUS[ctx.from].domicilio}*
-                \n\n- Si encuentra algún problema no dude en iniciar nuevamente el asistente con la palabra "OK"*`)
+                \n\n- Si encuentra algún problema no dude en iniciar nuevamente el asistente con la palabra "OK"*`,
+                )
+                
             }
 
             // if (ctx.body == 'Cambiar domicilio') {
@@ -664,10 +690,11 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
 
 
 
-const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
+const flowFecha = addKeyword(['fecha', '1'])
     .addAnswer(['Consultando las fechas disponibles....'], null, async (ctx, {
         flowDynamic,
-        provider
+        provider,
+        endFlow
     }) => {
 
         STATUS[ctx.from] = {
@@ -675,6 +702,164 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
                 nombre: await saveClientName(ctx.from)
 
             },
+            console.log(STATUS[ctx.from].nombre)
+            STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                domicilio: await getDomicilioByName(STATUS[ctx.from].nombre)
+
+            },
+
+            STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                fechasActualizadas: await saveFechasExcel()
+            }
+
+
+
+        if (STATUS[ctx.from].nombre == 'Teléfono no existe en Base de datos') {
+
+            return endFlow([{
+                body: 'Su teléfono no se encuentra en nuestra base de datos. Por favor seleccionar la opción de *asesor humano* o comuníquese del teléfono que recibió nuestros mensajes. Muchas gracias y disculpe por las molestias.',
+                buttons: [{
+                        body: '⬅️ Volver al inicio'
+                    },
+                    {
+                        body: 'Hablar con un asesor humano'
+                    }
+                ]
+            }])
+            
+
+        } else {
+
+            const id = ctx.key.remoteJid
+
+            const sections = [{
+                    title: "FECHAS",
+                    rows: [{
+                            title: '1',
+                            rowId: "option1",
+                            description: STATUS[ctx.from].fechasActualizadas[0]
+                        },
+                        {
+                            title: '2',
+                            rowId: "option2",
+                            description: STATUS[ctx.from].fechasActualizadas[1]
+                        },
+                        {
+                            title: '3',
+                            rowId: "option3",
+                            description: STATUS[ctx.from].fechasActualizadas[2]
+                        },
+                        {
+                            title: '4',
+                            rowId: "option4",
+                            description: STATUS[ctx.from].fechasActualizadas[3]
+                        },
+                        {
+                            title: '5',
+                            rowId: "option5",
+                            description: STATUS[ctx.from].fechasActualizadas[4]
+                        },
+                        {
+                            title: '6',
+                            rowId: "option6",
+                            description: STATUS[ctx.from].fechasActualizadas[5]
+                        },
+
+                    ]
+                },
+
+            ]
+
+            const listMessage = {
+                text: "Listado de fechas disponibles",
+                buttonText: "Seleccione una fecha *AQUÍ*",
+                sections
+            }
+            const abc = await provider.getInstance()
+            await abc.sendMessage(id, listMessage)
+            return
+        }
+
+    }, [])
+    .addAnswer(['*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*'], {
+            capture: true,
+            buttons: [{
+                body: '❌ Cancelar solicitud ❌'
+            }]
+        },
+        async (ctx, {
+            flowDynamic
+        }) => {
+
+
+            switch (ctx.body) {
+                case 'option1':
+
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[0]
+                    }
+                    break;
+                case 'option2':
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[1]
+                    }
+                    break;
+                case 'option3':
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[2]
+                    }
+                    break;
+                case 'option4':
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[3]
+                    }
+                    break;
+                case 'option5':
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[4]
+                    }
+                    break;
+                case 'option6':
+                    STATUS[ctx.from] = {
+                        ...STATUS[ctx.from],
+                        fechaElegida: STATUS[ctx.from].fechasActualizadas[5]
+                    }
+                    break;
+                case "❌ Cancelar solicitud ❌":
+                    await flowDynamic([{
+                        body: '❌ *Su solicitud de cita ha sido cancelada*  ❌',
+                        buttons: [{
+                            body: '⬅️ Volver al Inicio'
+                        }]
+
+                    }])
+                    break;
+                default:
+                    return flowDynamic('Ok,')
+                    break;
+            }
+
+
+
+
+        }, [flowHorario])
+
+const flowReprogramar = addKeyword(['reprogramar', '4'])
+    .addAnswer(['Tu visita fue cancelada. A continuación seleccionaremos la nueva fecha de visita'], null, async (ctx) => {
+        STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                nombre: await saveClientName(ctx.from)
+
+            },
+
+           
 
             STATUS[ctx.from] = {
                 ...STATUS[ctx.from],
@@ -686,6 +871,17 @@ const flowFecha = addKeyword(['fecha', '1', 'reprogram', '4'])
                 ...STATUS[ctx.from],
                 fechasActualizadas: await saveFechasExcel()
             }
+
+
+        modificaBaseCancelación(STATUS[ctx.from].nombre)
+        await adapterProvider.sendText('5491128010228@c.us', `El cliente ${STATUS[ctx.from].nombre} del domicilio ${STATUS[ctx.from].domicilio} reprograma la visita`)
+
+
+    })
+    .addAnswer(['Consultando las fechas disponibles....'], null, async (ctx, {
+        flowDynamic,
+        provider
+    }) => {
 
 
 
@@ -884,7 +1080,7 @@ const flowPrincipal = addKeyword(['ok', 'inicio', 'hola']).addAnswer(['Hola!'])
 
         await abc.sendMessage(id, listMessage)
         return
-    }, [flowFecha, flowAsesor, flowConsulta, flowComprobante])
+    }, [flowFecha, flowAsesor, flowConsulta, flowComprobante, flowReprogramar])
 
 
 
@@ -921,8 +1117,8 @@ const flowChatGPT = addKeyword('hey silver')
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal, flowChatGPT, flowConfirmación])
-    const adapterProvider = createProvider(BaileysProvider)
+    const adapterFlow = createFlow([flowPrincipal, flowChatGPT, flowConfirmación,flowReprogramar])
+
 
     createBot({
         flow: adapterFlow,
