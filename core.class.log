@@ -1,0 +1,150 @@
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491124668301@s.whatsapp.net',
+    fromMe: false,
+    id: '5D2C1EA4B77A911361D890C849AD9211',
+    participant: undefined
+  },
+  messageTimestamp: 1678754823,
+  pushName: 'matias cousteix',
+  message: Message {
+    conversation: 'Martin buenas noches',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: 'Martin buenas noches',
+  from: '5491124668301'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491124668301@s.whatsapp.net',
+    fromMe: false,
+    id: '9977BE9BD63B3B3E938ADFC644386FDD',
+    participant: undefined
+  },
+  messageTimestamp: 1678754824,
+  pushName: 'matias cousteix',
+  message: Message {
+    conversation: 'Dale',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: 'Dale',
+  from: '5491124668301'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491124668301@s.whatsapp.net',
+    fromMe: false,
+    id: '4A6FDC0E608D59C9CE9110D9C769BB2C',
+    participant: undefined
+  },
+  messageTimestamp: 1678754828,
+  pushName: 'matias cousteix',
+  message: Message {
+    conversation: 'Impecable',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: 'Impecable',
+  from: '5491124668301'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0868087EB0701A24A',
+    participant: undefined
+  },
+  messageTimestamp: 1678754838,
+  pushName: 'Martin',
+  message: Message {
+    conversation: 'ok',
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    }
+  },
+  body: 'ok',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB07B5BDBFC89B27F94',
+    participant: undefined
+  },
+  messageTimestamp: 1678754843,
+  pushName: 'Martin',
+  message: Message {
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    listResponseMessage: ListResponseMessage {
+      title: '*3*-*Consultar* visita previamente programada',
+      listType: 1,
+      singleSelectReply: [SingleSelectReply],
+      contextInfo: [ContextInfo],
+      description: 'Elija esta opcion para consultar si tiene una visita programada con nosotros '
+    }
+  },
+  body: 'option3',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0AE8FF5DC3E1F8EA4',
+    participant: undefined
+  },
+  messageTimestamp: 1678754849,
+  pushName: 'Martin',
+  message: Message {
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    buttonsResponseMessage: ButtonsResponseMessage {
+      selectedButtonId: 'id-btn-0',
+      selectedDisplayText: '⬅️ Volver al inicio',
+      contextInfo: [ContextInfo],
+      type: 1
+    }
+  },
+  body: '⬅️ Volver al inicio',
+  from: '5491157412668'
+}
+[handleMsg]:  {
+  key: {
+    remoteJid: '5491157412668@s.whatsapp.net',
+    fromMe: false,
+    id: '3EB0A32C498D5765EA30',
+    participant: undefined
+  },
+  messageTimestamp: 1678754854,
+  pushName: 'Martin',
+  message: Message {
+    messageContextInfo: MessageContextInfo {
+      deviceListMetadata: [DeviceListMetadata],
+      deviceListMetadataVersion: 2
+    },
+    listResponseMessage: ListResponseMessage {
+      title: '*1*-Elegir *fecha* y hora de visita',
+      listType: 1,
+      singleSelectReply: [SingleSelectReply],
+      contextInfo: [ContextInfo],
+      description: 'Elija esta opcion para reservar fecha y hora de visita'
+    }
+  },
+  body: 'option1',
+  from: '5491157412668'
+}

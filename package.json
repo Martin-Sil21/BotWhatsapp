@@ -17,6 +17,7 @@
         "@bot-whatsapp/portal": "^0.1.25",
         "@bot-whatsapp/provider": "^0.1.25",
         "baileys": "^6.0.7",
+        "chatgpt": "^5.0.10",
         "google-spreadsheet": "^3.3.0",
         "mime-types": "2.1.35",
         "openai": "^3.2.1",

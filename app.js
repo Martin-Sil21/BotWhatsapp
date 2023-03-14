@@ -562,9 +562,8 @@ const flowDomicilio = addKeyword(['mañana', 'tarde'])
                 \n- Fecha agendada: *${STATUS[ctx.from].fechaElegida}*
                 \n- Rango horario seleccionado: *${STATUS[ctx.from].rango}*
                 \n- Domicilio: *${STATUS[ctx.from].domicilio}*
-                \n\n- Si encuentra algún problema no dude en iniciar nuevamente el asistente con la palabra "OK"*`,
-                )
-                
+                \n\n- Si encuentra algún problema no dude en iniciar nuevamente el asistente con la palabra "OK"*`, )
+
             }
 
             // if (ctx.body == 'Cambiar domicilio') {
@@ -693,16 +692,23 @@ const flowHorario = addKeyword(['1', '2', '3', '4', '5', '6'])
 const flowFecha = addKeyword(['fecha', '1'])
     .addAnswer(['Consultando las fechas disponibles....'], null, async (ctx, {
         flowDynamic,
-        provider,
-        endFlow
+        provider
     }) => {
+
 
         STATUS[ctx.from] = {
                 ...STATUS[ctx.from],
                 nombre: await saveClientName(ctx.from)
 
             },
-            console.log(STATUS[ctx.from].nombre)
+
+            STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                respuestaConsulta: await getRowConsulta(STATUS[ctx.from].nombre)
+
+
+            },
+
             STATUS[ctx.from] = {
                 ...STATUS[ctx.from],
                 domicilio: await getDomicilioByName(STATUS[ctx.from].nombre)
@@ -715,10 +721,12 @@ const flowFecha = addKeyword(['fecha', '1'])
             }
 
 
+        if (STATUS[ctx.from].respuestaConsulta.Fecha == STATUS[ctx.from].fechasActualizadas[6]) await adapterProvider.sendText('5491124668301@c.us', `El cliente ${STATUS[ctx.from].nombre} del domicilio ${STATUS[ctx.from].domicilio} reprograma la visita`)
+
 
         if (STATUS[ctx.from].nombre == 'Teléfono no existe en Base de datos') {
 
-            return endFlow([{
+            return flowDynamic([{
                 body: 'Su teléfono no se encuentra en nuestra base de datos. Por favor seleccionar la opción de *asesor humano* o comuníquese del teléfono que recibió nuestros mensajes. Muchas gracias y disculpe por las molestias.',
                 buttons: [{
                         body: '⬅️ Volver al inicio'
@@ -728,7 +736,7 @@ const flowFecha = addKeyword(['fecha', '1'])
                     }
                 ]
             }])
-            
+
 
         } else {
 
@@ -859,7 +867,14 @@ const flowReprogramar = addKeyword(['reprogramar', '4'])
 
             },
 
-           
+            STATUS[ctx.from] = {
+                ...STATUS[ctx.from],
+                respuestaConsulta: await getRowConsulta(STATUS[ctx.from].nombre)
+
+
+            },
+
+
 
             STATUS[ctx.from] = {
                 ...STATUS[ctx.from],
@@ -873,8 +888,12 @@ const flowReprogramar = addKeyword(['reprogramar', '4'])
             }
 
 
+
         modificaBaseCancelación(STATUS[ctx.from].nombre)
-        await adapterProvider.sendText('5491128010228@c.us', `El cliente ${STATUS[ctx.from].nombre} del domicilio ${STATUS[ctx.from].domicilio} reprograma la visita`)
+
+
+     
+        if (STATUS[ctx.from].respuestaConsulta.Fecha == STATUS[ctx.from].fechasActualizadas[6]) await adapterProvider.sendText('5491128010228@c.us', `El cliente ${STATUS[ctx.from].nombre} del domicilio ${STATUS[ctx.from].domicilio} reprograma la visita`)
 
 
     })
@@ -1024,7 +1043,7 @@ const flowReprogramar = addKeyword(['reprogramar', '4'])
 
 
 
-const flowPrincipal = addKeyword(['ok', 'inicio', 'hola']).addAnswer(['Hola!'])
+const flowPrincipal = addKeyword(['ok', 'inicio', 'hola', 'buenas tardes', 'buenos días']).addAnswer(['Hola!'])
     .addAnswer(['Por favor elegir una de las siguientes opciones de la lista'], null, async (ctx, {
         provider,
     }) => {
@@ -1083,8 +1102,6 @@ const flowPrincipal = addKeyword(['ok', 'inicio', 'hola']).addAnswer(['Hola!'])
     }, [flowFecha, flowAsesor, flowConsulta, flowComprobante, flowReprogramar])
 
 
-
-
 const flowConfirmación = addKeyword(['equipos retirados', 'equipo retirado', 'quipo reti']).addAnswer('Gracias por su tiempo!', null, async (ctx) => {
     STATUS[ctx.from] = {
         ...STATUS[ctx.from],
@@ -1102,6 +1119,14 @@ const flowConfirmación = addKeyword(['equipos retirados', 'equipo retirado', 'q
 
 //FLOWS**\\
 
+// const flowqueFechaEs = addKeyword('quefechaes')
+//     .addAnswer('ya te digo', {
+//         capture: true
+//     }, async (ctx, {
+//         flowDynamic
+//     }) => {
+
+//     })
 
 const flowChatGPT = addKeyword('hey silver')
     .addAnswer('Dígame', {
@@ -1117,7 +1142,7 @@ const flowChatGPT = addKeyword('hey silver')
 
 const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([flowPrincipal, flowChatGPT, flowConfirmación,flowReprogramar])
+    const adapterFlow = createFlow([flowPrincipal, flowChatGPT, flowConfirmación])
 
 
     createBot({
@@ -1127,6 +1152,7 @@ const main = async () => {
     }, {
         blackList: []
     })
+
 
     QRPortalWeb()
 }
